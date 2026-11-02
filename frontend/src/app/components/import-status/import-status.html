@@ -1,0 +1,68 @@
+<h2 class="h4 mb-3">Статус импорта</h2>
+
+@if (error(); as errorMessage) {
+  <div class="alert alert-warning" role="alert">
+    {{ errorMessage }}
+  </div>
+}
+
+@if (job(); as currentJob) {
+  <div class="d-flex justify-content-between align-items-start mb-3">
+    <div>
+      <div class="fw-semibold">{{ currentJob.originalFilename }}</div>
+    </div>
+
+    <span class="badge" [class]="statusBadgeClass">{{ currentJob.status.replaceAll('_', ' ') }}</span>
+  </div>
+
+  <div class="row g-3 mb-3">
+    <div class="col-12 col-sm-4">
+      <div class="border rounded p-3 h-100">
+        <div class="text-body-secondary small">Всего</div>
+        <div class="fs-5 fw-semibold">{{ currentJob.totalRows }}</div>
+      </div>
+    </div>
+
+    <div class="col-12 col-sm-4">
+      <div class="border rounded p-3 h-100">
+        <div class="text-body-secondary small">Успешно</div>
+        <div class="fs-5 fw-semibold text-success">
+          {{ currentJob.successfulRows }}
+        </div>
+      </div>
+    </div>
+
+    <div class="col-12 col-sm-4">
+      <div class="border rounded p-3 h-100">
+        <div class="text-body-secondary small">Неудачно</div>
+        <div class="fs-5 fw-semibold text-danger">
+          {{ currentJob.failedRows }}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="small text-body-secondary">
+    <div>Начат: {{ currentJob.createdAt | date:'medium' }}</div>
+    <div>Обновлён: {{ currentJob.updatedAt | date:'medium' }}</div>
+
+    @if (currentJob.finishedAt) {
+      <div>Закончен: {{ currentJob.finishedAt | date:'medium' }}</div>
+    }
+  </div>
+
+  @if (currentJob.errors && currentJob.errors.length) {
+    <div class="h5 my-3">Список ошибок:</div>
+    <ul class="list-group">
+      @for (error of currentJob.errors; track error) {
+        <li class="list-group-item">Строка {{ error.row }}, {{ error.error }}</li>
+      }
+
+    </ul>
+  }
+
+} @else if (none()) {
+  <p class="text-body-secondary mb-0">В истории нет импортов.</p>
+} @else if (!error()) {
+  <p class="text-body-secondary mb-0">Загрузка…</p>
+}

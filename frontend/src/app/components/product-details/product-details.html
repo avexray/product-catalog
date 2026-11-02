@@ -1,0 +1,74 @@
+@if (product$ | async; as item) {
+  <div class="row g-4">
+      <div class="col-12 col-lg-6">
+        @if (item.images.length > 0) {
+          <img
+            class="main-image rounded bg-light"
+            [src]="selectedImage() ?? item.images[0].url"
+            [alt]="item.name"
+          />
+
+          @if (item.images.length > 1) {
+            <div class="d-flex gap-2 flex-wrap mt-3">
+              @for (image of item.images; track image.url) {
+                <button
+                  type="button"
+                  class="thumbnail-button btn p-0 border rounded overflow-hidden"
+                  [class.border-primary]="selectedImage() === image.url"
+                  [attr.aria-label]="'Show image of ' + item.name"
+                  [attr.aria-pressed]="selectedImage() === image.url"
+                  (click)="selectImage(image.url)"
+                >
+                  <img
+                    class="thumbnail-image"
+                    [src]="image.url"
+                    [alt]="item.name"
+                  />
+                </button>
+              }
+            </div>
+          }
+        } @else {
+          <div
+            class="image-placeholder bg-light rounded d-flex align-items-center justify-content-center text-secondary"
+          >
+            Нет изображений
+          </div>
+        }
+      </div>
+
+      <div class="col-12 col-lg-6">
+        <p class="text-secondary mb-1">
+          Товар #{{ item.id }}
+          @if (item.external_code) {
+            <span> · {{ item.external_code }}</span>
+          }
+        </p>
+
+        <h1 class="h2 mb-3">{{ item.name }}</h1>
+
+        <p class="h4 mb-3">
+          {{ item.price | currency }}
+          @if (item.discount > 0) {
+            <span class="badge text-bg-danger ms-2">
+              Скидка: {{ item.discount }}%
+            </span>
+          }
+        </p>
+
+        <p class="text-body-secondary">{{ item.description }}</p>
+
+        @if (item.attributes.length > 0) {
+          <h2 class="h5 mt-4">Детали</h2>
+          <dl class="row mb-0">
+            @for (attribute of item.attributes; track attribute.key) {
+              <dt class="col-sm-4">{{ attribute.key }}</dt>
+              <dd class="col-sm-8">{{ attribute.value }}</dd>
+            }
+          </dl>
+        }
+      </div>
+    </div>
+} @else {
+  Загрузка продукта…
+}

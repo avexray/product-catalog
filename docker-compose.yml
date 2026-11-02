@@ -1,0 +1,86 @@
+services:
+  app:
+    build:
+      context: ./backend
+      target: production
+    volumes:
+      - storage:/application/var/storage
+    env_file:
+      - .env
+    environment:
+      APP_ENV: production
+      MESSENGER_TRANSPORT_DSN: "amqp://${RABBITMQ_USER:-app}:${RABBITMQ_PASSWORD:?Set RABBITMQ_PASSWORD in .env}@queue:5672/%2f/messages"
+    depends_on:
+      db:
+        condition: service_healthy
+      queue:
+        condition: service_healthy
+    restart: unless-stopped
+
+  worker:
+    build:
+      context: ./backend
+      target: production
+    volumes:
+      - storage:/application/var/storage
+    command: ["php", "worker.php"]
+    env_file:
+      - .env
+    environment:
+      APP_ENV: production
+      MESSENGER_TRANSPORT_DSN: "amqp://${RABBITMQ_USER:-app}:${RABBITMQ_PASSWORD:?Set RABBITMQ_PASSWORD in .env}@queue:5672/%2f/messages"
+    depends_on:
+      db:
+        condition: service_healthy
+      queue:
+        condition: service_healthy
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+      target: production
+    volumes:
+      - storage:/storage:ro
+    ports:
+      - "80:80"
+    depends_on:
+      - app
+    restart: unless-stopped
+
+  db:
+    image: mariadb:13
+    environment:
+      MARIADB_DATABASE: ${DATABASE_NAME:?Set DATABASE_NAME in .env}
+      MARIADB_USER: ${DATABASE_USER:?Set DATABASE_USER in .env}
+      MARIADB_PASSWORD: ${DATABASE_PASSWORD:?Set DATABASE_PASSWORD in .env}
+      MARIADB_ROOT_PASSWORD: ${DATABASE_ROOT_PASSWORD:?Set DATABASE_ROOT_PASSWORD in .env}
+    volumes:
+      - mariadb_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    restart: unless-stopped
+
+  queue:
+    image: rabbitmq:4
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:-app}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:?Set RABBITMQ_PASSWORD in .env}
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+    restart: unless-stopped
+
+volumes:
+  mariadb_data:
+  rabbitmq_data:
+  storage:

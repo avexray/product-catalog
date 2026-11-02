@@ -1,0 +1,41 @@
+<app-product-list-form (submit)="onSubmit()"></app-product-list-form>
+
+@if (loading$ | async) {
+  <p>Загрузка товаров…</p>
+}
+
+@if (error$ | async; as error) {
+  <p role="alert">{{ error }}</p>
+}
+
+@if (products$ | async; as products) {
+  <div class="list-group mb-3">
+    @for (product of products; track product.id) {
+      <a [routerLink]="['/products', product.id]" class="list-group-item list-group-item-action">
+        {{ product.name }}
+      </a>
+    }
+  </div>
+}
+
+@if (totalPages$ | async; as totalPages) {
+  @if (currentPage$ | async; as currentPage) {
+    <nav aria-label="Product pagination">
+      <ul class="pagination">
+        @for (page of pageNumbers(totalPages); track page) {
+          <li
+            class="page-item"
+            [class.active]="page === currentPage"
+            [attr.aria-current]="page === currentPage ? 'page' : null">
+            <button
+              class="page-link"
+              type="button"
+              (click)="goToPage(page, totalPages)">
+              {{ page }}
+            </button>
+          </li>
+        }
+      </ul>
+    </nav>
+  }
+}

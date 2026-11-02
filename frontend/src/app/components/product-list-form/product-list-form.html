@@ -1,0 +1,45 @@
+<form [formGroup]="filterForm" (ngSubmit)="onSubmit()" class="row g-3 align-items-end mb-4" >
+  <div class="col-12 col-md-4">
+    <label for="productName" class="form-label">Название</label>
+    <input
+      id="productName"
+      type="text"
+      class="form-control"
+      formControlName="name"
+    />
+  </div>
+
+  <div class="col-6 col-md-3">
+    <label for="minPrice" class="form-label">Мин. цена</label>
+    <input
+      id="minPrice"
+      type="number"
+      class="form-control"
+      formControlName="minPrice"
+      min="0"
+      step="0.01"
+    />
+  </div>
+
+  <div class="col-6 col-md-3">
+    <label for="maxPrice" class="form-label">Макс. цена</label>
+    <input
+      id="maxPrice"
+      type="number"
+      class="form-control"
+      formControlName="maxPrice"
+      min="0"
+      step="0.01"
+    />
+  </div>
+
+  <div class="col-12 col-md-2 d-flex gap-2">
+    <button type="reset" class="btn btn-outline-secondary flex-fill">
+      Сброс
+    </button>
+
+    <button type="submit" class="btn btn-outline-primary flex-fill">
+      Показать
+    </button>
+  </div>
+</form>
